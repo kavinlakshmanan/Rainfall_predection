@@ -1,0 +1,107 @@
+# import libraries
+
+import numpy as np 
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split
+from pandas_profiling import ProfileReport
+from sklearn.metrics import accuracy_score
+
+# import dataset 
+
+df = pd.read_csv('weatherAUS.csv')
+df
+
+x = df.iloc[:,[1,2,3,4,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]].values
+
+y =df.iloc[:,-1].values
+
+# verify (x,y)
+
+print(x)
+print(y)
+
+
+# convert 1-D list to 2-D array
+y = y.reshape(-1,1)
+
+print(y)
+
+# cleaning the dataset
+
+from sklearn.impute import SimpleImputer
+
+imputer = SimpleImputer(missing_values=np.nan,strategy ='most_frequent')
+
+x = imputer.fit_transform(x)
+y = imputer.fit_transform(y)
+
+from sklearn.preprocessing import LabelEncoder
+
+l1 = LabelEncoder()
+x[:,0] = l1.fit_transform(x[:,0])
+
+l2 = LabelEncoder()
+x[:,4] = l2.fit_transform(x[:,4])
+
+l3 = LabelEncoder()
+x[:,6] = l3.fit_transform(x[:,6])
+
+l4 = LabelEncoder()
+x[:,7] = l4.fit_transform(x[:,7])
+
+l5 = LabelEncoder()
+x[:,-1] = l5.fit_transform(x[:,-1])
+
+l6 = LabelEncoder()
+y = l6.fit_transform(y)
+
+# preprocessing feature scaling
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+
+x = sc.fit_transform(x)
+# split datasets into train/test
+from sklearn.model_selection import train_test_split
+train_test_split(x,y,test_size=0.2)
+(x_train,x_test,y_train,y_test)=train_test_split(x,y,test_size=0.2,random_state=45)
+
+# create a model
+from sklearn.linear_model import LogisticRegression
+model = LogisticRegression()
+model.fit(x_train,y_train)
+
+# make prediction
+
+prediction = model.predict(x_test)
+print(prediction)
+
+prediction = l6.inverse_transform(prediction)
+print(prediction)
+y_test = l6.inverse_transform(y_test)
+print(y_test)y_test = y_test.reshape(-1,1)
+prediction = prediction.reshape(-1,1)
+
+# calculating accuracy
+
+from sklearn.metrics import accuracy_score
+score = accuracy_score(y_test,prediction)
+print(score)
+
+df = np.concatenate((y_test,prediction),axis=1)
+dataframe = pd.DataFrame(df,columns=['will it rain tomorrow','my prediction'])
+print(dataframe)
+
+# visualizing data
+
+pip install pandas-profiling
+
+import pandas as pd 
+
+from pandas_profiling import ProfileReport
+
+df = pd.read_csv('weatherAUS.csv')
+profile = ProfileReport(df)
+
+profile.to_file(output_file = 'weatherAUS.html')
